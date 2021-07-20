@@ -119,7 +119,7 @@ namespace Timelogger.Api.Controllers
             try
             {
 				await _projectService.DeleteProjectAsync(id);
-				return Ok(value: new { Message = "Project Deleted" });
+				return Ok();
 			}
 			catch (System.Exception ex)
 			{
