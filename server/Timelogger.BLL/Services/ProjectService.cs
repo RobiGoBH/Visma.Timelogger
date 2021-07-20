@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Project = Timelogger.BLL.DTO.Project;
 using System.Reflection;
+using Timelogger.BLL.Helper;
 
 namespace Timelogger.BLL.Services
 {
@@ -20,19 +21,16 @@ namespace Timelogger.BLL.Services
         public ProjectService(IUnitOfWork unitOfWork, IMapper mapper)
             : base(unitOfWork, mapper) { }
 
-              
-        
-
-        public async Task CreateProjectAsync(Project project)
+        public async Task<Project> CreateProjectAsync(Project project)
         {
             var projectExist = await _unitOfWork.ProjectRepository
-                .GetAllByCriteriaAsync(p => p.Name == project.Name) != null;
+                .GetSingleOrDefaultByCriteriaAsync(p => p.Name == project.Name) != null;
 
-            if (projectExist) throw new EntityDuplicateException($"Project \"{project.Name}\" already exist");
+            if (projectExist) throw new EntityDuplicateException($"Project '{project.Name}' already exist");
 
-            var mappedProject = _mapper.Map<Timelogger.DAL.Entities.Project> (project);
+            var mappedProject = _mapper.Map<DAL.Entities.Project> (project);
 
-            await _unitOfWork.ProjectRepository.AddAsync(mappedProject);
+            return _mapper.Map<Project>(await  _unitOfWork.ProjectRepository.AddAsync(mappedProject));
         }
 
         public async Task UpdateProjectAsync(Project project)
@@ -40,21 +38,12 @@ namespace Timelogger.BLL.Services
             var storedProject = await _unitOfWork.ProjectRepository
                 .GetByIdAsync(project.Id);
 
-            if (storedProject == null) throw new NotFoundException($"Project \"{project.Name}\" not found");
+            if (storedProject == null) throw new NotFoundException($"Project '{project.Name}' (Id = {project.Id}) not found");
 
-            PropertyInfo[] properties = typeof(Project).GetProperties();
-            foreach (var prop in properties)
-            {
-                if (prop.Name.ToLowerInvariant() == "id")
-                    continue;
+            bool isAnyUpdated = ServiceHelper<Project, DAL.Entities.Project>.UpdateDataByDTO(project,
+                                                                                                 ref storedProject);
 
-                if (prop.GetValue(project) != prop.GetValue(storedProject))
-                {
-                    prop.SetValue(storedProject, prop.GetValue(project));
-                }
-            }
-
-            await _unitOfWork.ProjectRepository.UpdateAsync(storedProject);
+            if (isAnyUpdated) await _unitOfWork.ProjectRepository.UpdateAsync(storedProject);            
         }
 
 
@@ -62,7 +51,7 @@ namespace Timelogger.BLL.Services
         {            
             var storedProject = await _unitOfWork.ProjectRepository.GetByIdAsync(id);
 
-            if (storedProject == null) throw new NotFoundException($"Project having id = {id} not found");
+            if (storedProject == null) throw new NotFoundException($"Project having Id = {id} not found");
 
             await _unitOfWork.ProjectRepository.DeleteAsync(storedProject);
         }
@@ -83,6 +72,6 @@ namespace Timelogger.BLL.Services
             if (storedProject == null) throw new NotFoundException($"Project having Id = {id} not found");
 
             return _mapper.Map<Project>(storedProject);
-        }
+        }        
     }
 }

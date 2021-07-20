@@ -10,7 +10,7 @@ namespace Timelogger.DAL.Entities
 	public class Project : BaseDateInfoEntity
 	{
 		public string Name { get; set; }
-		public DateTime Deadline { get; set; }
+		public DateTime? Deadline { get; set; }
 		public ProjectStatus Status { get; set; }
 		public virtual ICollection<ProjectTask> Tasks { get; set; }
 	}

@@ -9,16 +9,17 @@ namespace Timelogger.DAL.Configurations
     {
         public void Configure(EntityTypeBuilder<ProjectTask> builder)
         {
+            builder.Property(p => p.Id)
+                .UseIdentityColumn()
+                .IsRequired();
+
             builder.Property(p => p.Name)
                 .HasMaxLength(150)
                 .IsRequired();
 
             builder.Property(p => p.Type)
                 .HasMaxLength(50);
-
-            builder.Property(p => p.StartDate)
-                .IsRequired();
-
+            
             builder.Property(p => p.CreatedDate)
                 .HasDefaultValue(DateTime.UtcNow)
                 .IsRequired();

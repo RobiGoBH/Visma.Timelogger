@@ -55,7 +55,7 @@ namespace Timelogger.DAL.Base
                         case EntityState.Modified:
                             entity.ModifiedDate = utcNow;
 
-                            entry.Property("CreatedOn").IsModified = false;
+                            entry.Property("CreatedDate").IsModified = false;
                             break;
 
                         case EntityState.Added:

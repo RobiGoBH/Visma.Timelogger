@@ -5,11 +5,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
-using Timelogger.DAL.Entities;
-using Timelogger.DAL.Base;
 using Timelogger.Api.ExceptionHandler;
 using Timelogger.BLL.Dependencies;
 using Timelogger.DAL.Dependencies;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using TTimelogger.Api.DTOValidation;
+using Timelogger.DAL.Base;
+using Timelogger.BLL.DTO;
+using Timelogger.Api.Dependencies;
 
 namespace Timelogger.Api
 {
@@ -46,7 +50,11 @@ namespace Timelogger.Api
 				builder.AddDebug();
 			});
 
-			services.AddMvc(options => options.EnableEndpointRouting = false);
+			services.AddSwaggerGen();
+
+			services.AddMvc(options => options.EnableEndpointRouting = false).AddFluentValidation();
+
+			services.AddApiConfiguration();
 
 			if (_environment.IsDevelopment())
 			{
@@ -67,6 +75,16 @@ namespace Timelogger.Api
 
 			app.UseMvc();
 
+			// Enable middleware to serve generated Swagger as a JSON endpoint.
+			app.UseSwagger();
+
+			// Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+			// specifying the Swagger JSON endpoint.
+			app.UseSwaggerUI(c =>
+			{
+				c.SwaggerEndpoint("/swagger/v1/swagger.json", "Timelogger API V1");
+				c.RoutePrefix = string.Empty;
+			});
 
 			var serviceScopeFactory = app.ApplicationServices.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();

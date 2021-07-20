@@ -9,6 +9,10 @@ namespace Timelogger.DAL.Configurations
     {
         public void Configure(EntityTypeBuilder<Project> builder)
         {
+            builder.Property(p => p.Id)
+                .UseIdentityColumn()
+                .IsRequired();
+
             builder.Property(p => p.Name)
                 .HasMaxLength(150)
                 .IsRequired();
